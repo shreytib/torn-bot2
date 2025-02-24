@@ -1199,9 +1199,9 @@ const StartLoop = async () => {
 	};
 
 	// Start loops concurrently
-	manageUpdateFaction();
-	manageCheckUser();
-	manageCheckSE();
+	//manageUpdateFaction();
+	//manageCheckUser();
+	//manageCheckSE();
 	resetFacApiCallsCount();
 	outputApiCallsCount();
 	resetTempInvalidKeys();
@@ -1353,7 +1353,7 @@ async function addFaction(index){
 
 		++player_count;
 
-		if(player_count >= 5){
+		if(player_count >= 25){
 			let startTime = Date.now();
 
 			let results = await Promise.all(playerPromises);
