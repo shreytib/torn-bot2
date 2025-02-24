@@ -557,7 +557,7 @@ async function UserChecking(index, key_id) {
 				if(players[index].faction_name !== data.faction.faction_name){
 					players[index].faction_name = data.faction.faction_name;
 				}
-				if(Object.keys(factions).includes(data.faction.faction_id.toString())){
+				if(!Object.keys(factions).includes(data.faction.faction_id.toString())){
 					client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] ${players[index].name} [${index}] in ally faction ${data.faction.faction_name} [${data.faction.faction_id}]. Removed from track.` });
 					delete players[index];
 					return;
