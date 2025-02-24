@@ -1,5 +1,8 @@
 const fs = require("fs");
 const axios = require('axios');
+require('dotenv').config({ path: '../.env' });
+
+const botToken = process.env.BOT_TOKEN;
 
 const { Client, GatewayIntentBits , EmbedBuilder } = require('discord.js');
 
@@ -2046,4 +2049,4 @@ client.once('ready', () => {
 	StartLoop();
 });
 
-client.login(bot.token);
+client.login(botToken);
