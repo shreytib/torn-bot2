@@ -721,7 +721,7 @@ async function UserChecking(index, key_id) {
 						};
 						broadcast(payload);
 						client.channels.cache.get(bot.channel_sales).send({ content: bot.role_mug, embeds: [status] });
-						client.channels.cache.get(bot.channel_logs).send({ content:`${JSON.stringify(data)}` });
+						// client.channels.cache.get(bot.channel_logs).send({ content:`${JSON.stringify(data)}` });
 
 						console.log(`${players[index].name} has $${players[index].soldValue} on hand, sending message`);
 						stalking_blacklist.set(index, {time:currdate+30, name:players[index].name});
@@ -778,7 +778,7 @@ async function SEChecking(index, key_id) {
 	
 			let color = "#0ca60c";
 	
-			if( (['106', '329', '330', '331', '336'].includes(index) && qty === 1) || (!['1118', '1119', '1120', '1121', '1122'].includes(index) && qty <= 5) ){
+			if( (['106', '329', '330', '331', '336'].includes(index) && qty === 1) || (!['106', '329', '330', '331', '336'].includes(index) && qty <= 5) ){
 				diff = (items[index].minimum * 1.1) - minCost;
 	
 				if(diff > 0){
