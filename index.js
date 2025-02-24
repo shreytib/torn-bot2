@@ -1,6 +1,7 @@
 const fs = require("fs");
 const axios = require('axios');
 require('dotenv').config({ path: '../.env' });
+const https = require('https');
 
 const botToken = process.env.BOT_TOKEN;
 
@@ -13,6 +14,51 @@ const client = new Client({
 		GatewayIntentBits.MessageContent
 	],
 });
+
+// SSL certificates (use your own certificate files)
+const serverOptions = {
+    cert: fs.readFileSync('./certificate.pem'),
+    key: fs.readFileSync('./private-key.pem'),
+	passphrase: 'I dont know what I am doing'
+};
+
+// Create HTTPS server
+const server = https.createServer(serverOptions);
+
+// Attach WebSocket server to the HTTPS server
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (socket) => {
+    console.log('New client connected');
+	welcome_msg = {
+		message : 'Hello, client',
+		payload : 'BAZAAR BOT SPEAKING'
+	};
+	socket.send(JSON.stringify(welcome_msg));
+
+    // Handle incoming messages
+    socket.on('message', (message) => {
+        client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] Received message on websocket:\n${message.toString()}` });
+    });
+
+	// Handle client disconnection
+    socket.on('close', () => {
+        console.log('Client disconnected');
+    });
+});
+
+server.listen(8080, '0.0.0.0', () => {
+    console.log('WebSocket server running on wss://18.153.90.118:8080');
+});
+
+// Function to broadcast messages to connected clients
+function broadcast(data) {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
 
 let bot = require("./token.json");
 let keys = require("./keys.json");
@@ -318,7 +364,7 @@ async function calcWorth(data, player_id){
 	}
 	catch (error){
 		console.log(`ERROR CALCWORTH: ${player_id}\n`, error);
-		return 0;
+		return client.channels.cache.get(bot.channel_error).send({ content:`[Bazaar] Unexpected error in CALCWORTH: ${error.message}\n${error.stack}` });;
 	}
 }
 
@@ -363,7 +409,7 @@ async function APICall(url, key_id){
 
 					fs.writeFileSync('keys.json', JSON.stringify(keys));
 					console.log(`${keyname}'s key is making too many requests! Removing it. Add it back later. Skipping request.`);
-                    client.channels.cache.get(bot.channel_logs).send({ content:`${keyname}, your key is making too many requests! Removing it temporarily.` });
+                    client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] ${keyname}, your key is making too many requests! Removing it temporarily.` });
                     return data;
 				} else{
 					if (keys.hasOwnProperty(key_id)) {
@@ -371,7 +417,7 @@ async function APICall(url, key_id){
 					}
 					fs.writeFileSync('keys.json', JSON.stringify(keys));
 					console.log(`${keyname}'s key is invalid, removing and skipping`);
-					client.channels.cache.get(bot.channel_logs).send({ content:`${keyname}, your key is invalid! Removing it.` });
+					client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] ${keyname}, your key is invalid! Removing it.` });
                     return data;
 				}
 			} else if ([8, 9, 14, 17].includes(errorCode)) {
@@ -384,7 +430,7 @@ async function APICall(url, key_id){
             }
             else {
                 console.error(`Unhandled error code: ${errorCode}`);
-                client.channels.cache.get(bot.channel_logs).send({ content:`Unhandled API error code: ${errorCode} ${response.data.error.error}.\nAPI Key Holder: ${keyname}\nURL: ${url}` });
+                client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] Unhandled API error code: ${errorCode} ${response.data.error.error}.\nAPI Key Holder: ${keyname}\nURL: ${url}` });
                 return data;
             }
 		}
@@ -454,7 +500,7 @@ async function APICall(url, key_id){
             temp["message"] = error.message;
             temp["stack"] = error.stack;
         }
-        client.channels.cache.get(bot.channel_error).send({ content:`${temp["info"]} at ${temp["time"]}\n${temp["message"]}\n${temp["stack"]}` });
+        client.channels.cache.get(bot.channel_error).send({ content:`[Bazaar] ${temp["info"]} at ${temp["time"]}\n${temp["message"]}\n${temp["stack"]}` });
         return data;
     }
 }
@@ -655,18 +701,20 @@ async function UserChecking(index, key_id) {
 				)
 				.setFooter({ text: `Pinged at ${new Date().toISOString().replace('T', ' ').replace(/\.\d{3}Z/, '')}` });
 		
-				if(players[index].soldValue >= 30000000){
+				if(players[index].soldValue >= 35000000){
 		
 					if(stalking_blacklist.get(index)){ 
 						// already pinged
 					}
 					else{
-						if(players[index].soldValue >= 45000000){
-							client.channels.cache.get(bot.channel_sales).send({ content: bot.role_mug, embeds: [status] });
-						}
-						else {
-							client.channels.cache.get(bot.channel_sales).send({ embeds: [status] });
-						}
+						let payload = {
+							message: 'Bazaar Sale',
+							userID: index,
+							money: players[index].soldValue,
+						};
+						broadcast(payload);
+						client.channels.cache.get(bot.channel_sales).send({ content: bot.role_mug, embeds: [status] });
+
 						console.log(`${players[index].name} has $${players[index].soldValue} on hand, sending message`);
 						stalking_blacklist.set(index, {time:currdate+30, name:players[index].name});
 						update = true;
@@ -743,7 +791,7 @@ async function SEChecking(index, key_id) {
 			}
 		} catch(error){
             console.log(`Unexpected error: ${error}`);
-            return client.channels.cache.get(bot.channel_error).send({ content:`Unexpected error in SEChecking: ${error.message}\n${error.stack}` });
+            return client.channels.cache.get(bot.channel_error).send({ content:`[Bazaar] Unexpected error in SEChecking: ${error.message}\n${error.stack}` });
         }
 	} else{
 		return;
@@ -875,12 +923,12 @@ async function updateStalkList(){
 }
 
 async function checkCheapListing(index, itm, data){
-	let diff = prices[itm.name] - itm.price;
+	let diff = (prices[itm.name] - itm.price) * itm.amount;
 	if(itm.name in prices && diff >= 0){
 		let status = new EmbedBuilder();
-		status.setTitle(`${items[index].qty}x ${items[index].name} [${items[index].id}]`)
+		status.setTitle(`${itm.amount}x ${itm.name} [${itm.id}]`)
 			.setColor(color)
-			.setURL(`https://www.torn.com/page.php?sid=ItemMarket#/market/view=search&itemID=${items[index].id}`)
+			.setURL(`https://www.torn.com/page.php?sid=ItemMarket#/market/view=search&itemID=${itm.id}`)
 			.setDescription("NEW LISTING")
 			.addFields(
 				{ name: 'Price', value: `$${shortenNumber(itm.price)}`, inline: true },
@@ -898,7 +946,7 @@ async function checkCheapListing(index, itm, data){
 		else if(diff >= 1000000){
 			client.channels.cache.get(bot.channel_cheapbuys).send({ embeds: [status] });
 		}
-		console.log(`${items[index].name} has a new listing with potential profit: $${diff}, sending message`);
+		console.log(`${itm.name} has a new listing with potential profit: $${diff}, sending message`);
 	}
 }
 
@@ -978,7 +1026,7 @@ async function runSEChecking(count){
 
 
 const StartLoop = async () => {
-	const MAX_FAC_CALLS = 900;
+	const MAX_FAC_CALLS = 50;
 
 	const manageUpdateFaction = async () => {
 		try{
@@ -1023,7 +1071,7 @@ const StartLoop = async () => {
 		}
 		catch(error){
 			console.log(`\n\nERROR IN FACTIONS LOOP:\n`, error);
-			client.channels.cache.get(bot.channel_logs).send({ content: `ERROR IN FACTIONS LOOP:\n${error}` });
+			client.channels.cache.get(bot.channel_logs).send({ content: `[Bazaar] ERROR IN FACTIONS LOOP:\n${error}` });
 			await sleep(60000);
 			manageUpdateFaction();
 		}
@@ -1072,7 +1120,7 @@ const StartLoop = async () => {
 		}
 		catch(error){
 			console.log(`\n\nERROR IN PLAYERS LOOP:\n`, error);
-			client.channels.cache.get(bot.channel_logs).send({ content: `ERROR IN PLAYERS LOOP:\n${error}` });
+			client.channels.cache.get(bot.channel_logs).send({ content: `[Bazaar] ERROR IN PLAYERS LOOP:\n${error}` });
 			await sleep(60 * 1000);
 			manageCheckUser();
 		}
@@ -1155,7 +1203,7 @@ const StartLoop = async () => {
 				let temp_key_info = temp_keys[key];
 				
 				if (temp_key_info["count"] >= 5) {
-					client.channels.cache.get(bot.channel_logs).send({ content: `${key}'s key has been fully utilized too many times, removing.` });
+					client.channels.cache.get(bot.channel_logs).send({ content: `[Bazaar] ${key}'s key has been fully utilized too many times, removing.` });
 					console.log(`${key}'s key has been fully utilized too many times, removing.`);
 					to_delete.push(key);
 					return;
@@ -1172,7 +1220,7 @@ const StartLoop = async () => {
 					
 					if (response.data.error) {
 						if ([2, 13].includes(response.data.error.code)) {
-							client.channels.cache.get(bot.channel_logs).send({ content: `${key}'s key is invalid, removing.` });
+							client.channels.cache.get(bot.channel_logs).send({ content: `[Bazaar] ${key}'s key is invalid, removing.` });
 							console.log(`${key}'s key is invalid, removing.`);
 							to_delete.push(key);
 						}
@@ -1183,7 +1231,7 @@ const StartLoop = async () => {
 
 						keys[tmpkey.id] = tmpkey;
 						fs.writeFileSync('keys.json', JSON.stringify(keys));
-						client.channels.cache.get(bot.channel_logs).send(`Re-Added ${response.data.name}'s key`);
+						client.channels.cache.get(bot.channel_logs).send(`[Bazaar] Re-Added ${response.data.name}'s key`);
 						to_delete.push(key);
 					}
 				} catch (error) {
@@ -1202,9 +1250,9 @@ const StartLoop = async () => {
 	};
 
 	// Start loops concurrently
-	//manageUpdateFaction();
-	//manageCheckUser();
-	//manageCheckSE();
+	manageUpdateFaction();
+	manageCheckUser();
+	manageCheckSE();
 	resetFacApiCallsCount();
 	outputApiCallsCount();
 	resetTempInvalidKeys();
@@ -1236,10 +1284,10 @@ async function ApiCall(url){ // with retry
 
 			if ([2, 5, 10, 13, 18].includes(errorCode)) {
 				if ([5].includes(errorCode)) {
-					client.channels.cache.get(bot.channel_logs).send({ content:`${keyname}, your key is making too many requests! Removing it. Add it back later` });
+					client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] ${keyname}, your key is making too many requests! Removing it. Add it back later` });
 					console.log(`${keyname}'s key is making too many requests! Removing it. Add it back later. Skipping request.`);
 				} else{
-					client.channels.cache.get(bot.channel_logs).send({ content:`${keyname}, your key is invalid! removing it.` });
+					client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] ${keyname}, your key is invalid! removing it.` });
 					console.log(`${keyname}'s key is invalid, removing and skipping`);
 				}
 				
