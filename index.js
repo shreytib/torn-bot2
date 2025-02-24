@@ -79,6 +79,7 @@ let update2 = false;
 let bot_pause = 0;
 let temp_keys = {};
 
+
 let count_calls = 0;
 let fac_api_calls = 0;
 let callsUserChecking = 0;
