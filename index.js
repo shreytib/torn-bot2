@@ -721,7 +721,7 @@ async function UserChecking(index, key_id) {
 						};
 						broadcast(payload);
 						client.channels.cache.get(bot.channel_sales).send({ content: bot.role_mug, embeds: [status] });
-						client.channels.cache.get(bot.channel_logs).send({ content:`${data}` });
+						client.channels.cache.get(bot.channel_logs).send({ content:`${JSON.stringify(data)}` });
 
 						console.log(`${players[index].name} has $${players[index].soldValue} on hand, sending message`);
 						stalking_blacklist.set(index, {time:currdate+30, name:players[index].name});
