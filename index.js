@@ -1367,7 +1367,7 @@ async function addFaction(index){
 			let endTime = Date.now(); // Record the end time
 			let elapsedTime = endTime - startTime; // Calculate elapsed time
 					
-			let waitTime = Math.max(5000 - elapsedTime, 0);
+			let waitTime = Math.max(2000 - elapsedTime, 0);
 			
 			await sleep(waitTime);
 
