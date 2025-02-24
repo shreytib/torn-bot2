@@ -2,6 +2,7 @@ const fs = require("fs");
 const axios = require('axios');
 require('dotenv').config({ path: '../.env' });
 const https = require('https');
+const WebSocket = require('ws');
 
 const botToken = process.env.BOT_TOKEN;
 
