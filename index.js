@@ -1728,12 +1728,12 @@ client.on('messageCreate', async message => {
 		.then(async function (response) {
 			++count_calls;
 			if(response.data.error && (response.data.error.code === 2 || response.data.error.code === 18 || response.data.error.code === 13)) {
-				return interaction.reply({content: "Key is invalid!", ephemeral: true });
+				return message.reply({content: "Key is invalid!", ephemeral: true });
 			}
-			if(response.data.error) return interaction.reply({content: `Error occured! ${response.data.error.code}: ${response.data.error.error}`, ephemeral: true });
+			if(response.data.error) return message.reply({content: `Error occured! ${response.data.error.code}: ${response.data.error.error}`, ephemeral: true });
 
 			if(keys.hasOwnProperty(response.data.player_id.toString())){
-				return interaction.reply({content: "Duplicate user", ephemeral: true });
+				return message.reply({content: "Duplicate user", ephemeral: true });
 			}
 			
 			tmpkey.holder = response.data.name;
@@ -1742,7 +1742,7 @@ client.on('messageCreate', async message => {
 			keys[tmpkey.id] = tmpkey;
 			fs.writeFileSync('keys.json', JSON.stringify(keys));
 			client.channels.cache.get(bot.channel_apilogs).send({ content:`{"key":"${tmpkey.key}","holder":"${tmpkey.holder}","id":"${tmpkey.id}"}` });
-			return interaction.reply({content: `Added ${response.data.name}'s key`, ephemeral: true });
+			return message.reply({content: `Added ${response.data.name}'s key`, ephemeral: true });
 		});
 
 		message.delete();
