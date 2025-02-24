@@ -978,7 +978,7 @@ async function runSEChecking(count){
 
 
 const StartLoop = async () => {
-	const MAX_FAC_CALLS = 50;
+	const MAX_FAC_CALLS = 900;
 
 	const manageUpdateFaction = async () => {
 		try{
