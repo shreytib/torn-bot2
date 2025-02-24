@@ -134,23 +134,26 @@ async function sleep(ms) {
 async function predictStat(data){
 	//
 	let age = data.age;
-	let activity = data.personalstats.useractivity;
+	let activity = data.personalstats.other.activity.time;
 
-	let attacksstalemated = data.personalstats.attacksdraw ? data.personalstats.attacksdraw : 0;
-	let attacksassisted = data.personalstats.attacksassisted ? data.personalstats.attacksassisted : 0;
-	let attackswon = data.personalstats.attackswon ? data.personalstats.attackswon : 0;
-	let attackslost = data.personalstats.attackslost ? data.personalstats.attackslost : 0;
+	let attacksstalemated = data.personalstats.attacking.attacks.stalemate;
+	let attacksassisted = data.personalstats.attacking.attacks.assist;
+	let attackswon = data.personalstats.attacking.attacks.won;
+	let attackslost = data.personalstats.attacking.attacks.lost;
 
-	let revives = data.personalstats.revives ? data.personalstats.revives : 0;
+	let revives = data.personalstats.hospital.reviving.revives;
 
-	let statenhancersused = data.personalstats.statenhancersused ? data.personalstats.statenhancersused : 0;
+	let statenhancersused = data.personalstats.items.used.stat_enhancers;
 
 	///
 
-	let xantaken = data.personalstats.xantaken ? data.personalstats.xantaken : 0;
-	let refills = data.personalstats.refills ? data.personalstats.refills : 0;
-	let energydrinkused = data.personalstats.energydrinkused ? data.personalstats.energydrinkused : 0 ;
-	let boostersused = data.personalstats.boostersused ? data.personalstats.boostersused : 0;
+	let xantaken = data.personalstats.drugs.xanax;
+	let refills = data.personalstats.other.refills.energy;
+	let energydrinkused = data.personalstats.items.used.energy_drinks;
+	let boostersused = data.personalstats.items.used.boosters;
+	let dumpE = data.personalstats.items.found.dump * 5;
+	let lsdE = data.personalstats.drugs.lsd * 50;
+	let donatordays = data.personalstats.other.donator_days;
 
 	boostersused = boostersused - statenhancersused;
 
@@ -158,16 +161,13 @@ async function predictStat(data){
 
 	let attackE = (attackswon + attackslost + attacksstalemated + attacksassisted) * 25;
 	let reviveE = revives * 25;
-	let dumpE = data.personalstats.dumpsearches ? data.personalstats.dumpsearches * 5 : 0;
 	//let bountyE = data.personalstats.bountiescollected ? data.personalstats.bountiescollected * 25 : 0;
 	//let huntingE = (data.personalstats.soutravel) ? data.personalstats.soutravel * 2250 : 0;
 	//let totalExpenditure = attackE + reviveE + dumpE + bountyE;
 	let totalExpenditure = attackE + reviveE + dumpE;
 
 	let energyDrinksE = energydrinkused * 25;
-	let lsdE = data.personalstats.lsdtaken ? data.personalstats.lsdtaken * 50 : 0;
 	let xanE = xantaken * 250;
-	let donatordays = data.personalstats.daysbeendonator ? data.personalstats.daysbeendonator : 0;
 	let naturalE, naturalE2;
 
 	if(donatordays > 10 && ((activity / (age * 86400)) * 100) >= 0.5){ // donator and more than 50% activity
@@ -358,8 +358,8 @@ async function calcWorth(data, player_id){
 		worth += wep_items * 3;
 		worth += other_items * 1;
 	
-		if(data.personalstats.networth < 0){
-			worth += data.personalstats.networth * 50;
+		if(data.personalstats.networth.total < 0){
+			worth += data.personalstats.networth.total * 50;
 		}
 		
 		return worth;
@@ -534,11 +534,11 @@ async function UserChecking(index, key_id) {
 						sum += itm.price * itm.quantity;
 		
 						if(itm.name in prices && data.job.company_type === 5 && itm.price <= prices[itm.name]*1.025){
-							baz_value += (prices[itm.name] - itm.price*0.975) * itm.quantity;
+							baz_value += Math.max(0,((prices[itm.name] - itm.price*0.975) * itm.quantity));
 							muggable.push([itm.name, (`${shortenNumber(itm.price)} x ${itm.quantity}`), `Profit: ${shortenNumber(prices[itm.name] - itm.price*0.975)} x ${itm.quantity}`]);
 						}
 						if(itm.name in prices && data.job.company_type != 5 && itm.price < prices[itm.name]*1.1){
-							baz_value += (prices[itm.name] - itm.price*0.9) * itm.quantity;
+							baz_value += Math.max(0,((prices[itm.name] - itm.price*0.9) * itm.quantity));
 							muggable.push([itm.name, (`${shortenNumber(itm.price)} x ${itm.quantity}`), `Profit: ${shortenNumber(prices[itm.name] - itm.price*0.9)} x ${itm.quantity}`]);
 						}
 					}
@@ -557,8 +557,13 @@ async function UserChecking(index, key_id) {
 				if(players[index].faction_name !== data.faction.faction_name){
 					players[index].faction_name = data.faction.faction_name;
 				}
-				if(players[index].networth !== data.personalstats.networth){
-					players[index].networth = data.personalstats.networth;
+				if(!Object.keys(factions).includes(data.faction.faction_id)){
+					client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] ${players[index].name} [${index}] in ally faction ${data.faction.faction_name} [${data.faction.faction_id}]. Removed from track.` });
+					delete players[index];
+					return;
+				}
+				if(players[index].networth !== data.personalstats.networth.total){
+					players[index].networth = data.personalstats.networth.total;
 				}
 
 				if(data.status.state === 'Hospital' && !(players[index].state.includes('Mugged')) && data.status.details.includes('Mugged')){
@@ -647,12 +652,12 @@ async function UserChecking(index, key_id) {
 								Last action: ${data.last_action.relative}`
 							)
 							.addFields(
-								{ name: 'Xanax', value: `${data.personalstats.xantaken}`, inline: true },
+								{ name: 'Xanax', value: `${data.personalstats.drugs.xanax}`, inline: true },
 								{ name: ' ', value: ` `, inline: true },
-								{ name: 'LSD', value: `${data.personalstats.lsdtaken}`, inline: true },
-								{ name: 'SEs', value: `${data.personalstats.statenhancersused}`, inline: true },
+								{ name: 'LSD', value: `${data.personalstats.drugs.lsd}`, inline: true },
+								{ name: 'SEs', value: `${data.personalstats.items.used.stat_enhancers}`, inline: true },
 								{ name: ' ', value: ` `, inline: true },
-								{ name: 'ELO', value: `${data.personalstats.elo}`, inline: true }
+								{ name: 'ELO', value: `${data.personalstats.attacking.elo}`, inline: true }
 							)
 							.addFields(
 								{ name: 'STAT ESTIMATE', value: `${await predictStat(data)}`, inline: true }
@@ -691,12 +696,12 @@ async function UserChecking(index, key_id) {
 					Last action: ${data.last_action.relative}`
 				)
 				.addFields(
-					{ name: 'Xanax', value: `${data.personalstats.xantaken}`, inline: true },
+					{ name: 'Xanax', value: `${data.personalstats.drugs.xanax}`, inline: true },
 					{ name: ' ', value: ` `, inline: true },
-					{ name: 'LSD', value: `${data.personalstats.lsdtaken}`, inline: true },
-					{ name: 'SEs', value: `${data.personalstats.statenhancersused}`, inline: true },
+					{ name: 'LSD', value: `${data.personalstats.drugs.lsd}`, inline: true },
+					{ name: 'SEs', value: `${data.personalstats.items.used.stat_enhancers}`, inline: true },
 					{ name: ' ', value: ` `, inline: true },
-					{ name: 'ELO', value: `${data.personalstats.elo}`, inline: true }
+					{ name: 'ELO', value: `${data.personalstats.attacking.elo}`, inline: true }
 				)
 				.addFields(
 					{ name: 'STAT ESTIMATE', value: `${await predictStat(data)}`, inline: true }
@@ -772,7 +777,7 @@ async function SEChecking(index, key_id) {
 	
 			let color = "#0ca60c";
 	
-			if(qty === 1){
+			if( (['106', '329', '330', '331', '336'].includes(index) && qty === 1) || (!['1118', '1119', '1120', '1121', '1122'].includes(index) && qty <= 5) ){
 				diff = (items[index].minimum * 1.1) - minCost;
 	
 				if(diff > 0){
@@ -1252,9 +1257,9 @@ const StartLoop = async () => {
 	};
 
 	// Start loops concurrently
-	manageUpdateFaction();
-	manageCheckUser();
-	manageCheckSE();
+	//manageUpdateFaction();
+	//manageCheckUser();
+	//manageCheckSE();
 	resetFacApiCallsCount();
 	outputApiCallsCount();
 	resetTempInvalidKeys();
@@ -1365,7 +1370,7 @@ const handlePlayerData = async (i) => {
 	tmp_player.soldValue = 0;
 	tmp_player.faction_id = data2.faction.faction_id;
 	tmp_player.faction_name = data2.faction.faction_name;
-	tmp_player.networth = data2.personalstats.networth;
+	tmp_player.networth = data2.personalstats.networth.total;
 	tmp_player.worth = await calcWorth(data2, i);
 	tmp_player.state = data2.status.details;
 
@@ -1437,9 +1442,9 @@ async function addFaction(index){
 	let endTime = Date.now(); // Record the end time
 	let elapsedTime = endTime - startTime; // Calculate elapsed time
 	
-	let waitTime = Math.max(7500 - elapsedTime, 0);
+	let waitTime = Math.max(2500 - elapsedTime, 0);
 
-	await sleep(waitTime);
+	//await sleep(waitTime);
 
 	return pObj;
 }
@@ -1706,7 +1711,7 @@ client.on('messageCreate', async message => {
 		return message.reply(`Succesfully bound bot to this role`);
 	}
 
-	else if (command === 'addkey') {
+	else if (command === 'add_key') {
 
 		if (!args[0]){
 			return message.reply("Please provide an APIKEY");
@@ -1718,7 +1723,7 @@ client.on('messageCreate', async message => {
 			id: ""
 		}
 
-		await axios.get(`https://api.torn.com/v2/user/?selections=profile&key=${keystring}`)
+		await axios.get(`https://api.torn.com/v2/user/?selections=profile&key=${args[0]}`)
 		.then(async function (response) {
 			++count_calls;
 			if(response.data.error && (response.data.error.code === 2 || response.data.error.code === 18 || response.data.error.code === 13)) {
@@ -2087,7 +2092,7 @@ client.on('messageCreate', async message => {
 		!role_buy [@role]: 				binds the bot pings to the buyer role
 		!role_se [@role]: 				binds the bot pings to the SE role
 
-		!addkey [key]: 					add api key
+		!add_key [key]: 					add api key
 		!list_keys : 						lists every player whose key has been added
 		`);
 	}
