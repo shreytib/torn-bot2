@@ -597,7 +597,7 @@ async function UserChecking(index, key_id) {
 					return;
 				}
 
-				let last_count = players[index].lastBazaarValue;
+				let last_count = players[index].lastBazaarCount;
 				players[index].lastBazaarValue = sum;
 				players[index].lastBazaarCount = count;
 				//if(players[index].soldValue!=0) console.log(`${players[index].name} has sold $${players[index].soldValue} worth of items`);
