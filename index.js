@@ -326,9 +326,11 @@ async function calcWorth(data, player_id){
 		let wep_items = 0;
 		let armor_items = 0;
 		let other_items = 0;
+		let count = 0;
 	
 		if(data.bazaar.length != 0) {
 			for(itm of data.bazaar){
+				count++;
 				if(itm.hasOwnProperty('UID') && itm.type === 'Defensive' && itm.price <= itm.market_price * 1.5){
 					armor_items += itm.price;
 				}
@@ -351,6 +353,7 @@ async function calcWorth(data, player_id){
 				}
 			}
 		}
+		players[player_id]?.lastBazaarCount = count;
 	
 		worth += (players[player_id]?.soldValue ?? 0) * 100; // if soldValue is undefined, add 0
 		worth += common_items * 20;
@@ -527,9 +530,11 @@ async function UserChecking(index, key_id) {
 				let sum = 0;
 				let baz_value = 0;
 				let muggable = [];
+				let count = 0;
 
 				if(data.bazaar.length !== 0) {
 					for(itm of data.bazaar){
+						count++;
 						checkCheapListing(index, itm, data);
 						sum += itm.price * itm.quantity;
 		
@@ -583,8 +588,16 @@ async function UserChecking(index, key_id) {
 				else{
 					players[index].soldValue += players[index].lastBazaarValue - sum;
 				}
+				if(count === 0 && players[index].lastBazaarCount - count >= 10){
+					players[index].soldValue = 0;
+					client.channels.cache.get(bot.channel_error).send({ content: `Player ${players[index].name} [${index}]: Had ${players[index].lastBazaarCount} listings, now 0 at: ${new Date()}` });
+					players[index].lastBazaarValue = sum;
+					players[index].lastBazaarCount = count;
+					return;
+				}
 
 				players[index].lastBazaarValue = sum;
+				players[index].lastBazaarCount = count;
 				//if(players[index].soldValue!=0) console.log(`${players[index].name} has sold $${players[index].soldValue} worth of items`);
 		
 				if(players[index].soldValue < 0){
@@ -1382,11 +1395,14 @@ const handlePlayerData = async (i) => {
 	tmp_player.state = data2.status.details;
 
 	let sum = 0;
+	let count = 0;
 	for (const itm of data2.bazaar) {
 		let currItm = itm.price * itm.quantity;
 		sum += currItm;
+		count++;
 	}
 	tmp_player.lastBazaarValue = sum;
+	tmp_player.lastBazaarCount = count;
 
 	return { playerId: i, playerData: tmp_player };
 };
