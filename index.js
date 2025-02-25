@@ -589,14 +589,15 @@ async function UserChecking(index, key_id) {
 				else{
 					players[index].soldValue += players[index].lastBazaarValue - sum;
 				}
-				if(count === 0 && players[index].lastBazaarCount - count >= 10){
+				if(count === 0 && players[index].lastBazaarValue >= 1000000000){
 					players[index].soldValue = 0;
-					client.channels.cache.get(bot.channel_error).send({ content: `Player ${players[index].name} [${index}]: Had ${players[index].lastBazaarCount} listings, now 0 at: ${new Date()}` });
+					//client.channels.cache.get(bot.channel_error).send({ content: `Player ${players[index].name} [${index}]: Had ${players[index].lastBazaarCount} listings, now 0 at: ${new Date()}` });
 					players[index].lastBazaarValue = sum;
 					players[index].lastBazaarCount = count;
 					return;
 				}
 
+				let last_count = players[index].lastBazaarValue;
 				players[index].lastBazaarValue = sum;
 				players[index].lastBazaarCount = count;
 				//if(players[index].soldValue!=0) console.log(`${players[index].name} has sold $${players[index].soldValue} worth of items`);
@@ -707,7 +708,8 @@ async function UserChecking(index, key_id) {
 						`Is leaving hospital <t:${data.status.until}:R>`
 						: `Is ${data.status.state}`}
 					**And has $${shortenNumber(players[index].soldValue)} on hand.**
-					Last action: ${data.last_action.relative}`
+					Last action: ${data.last_action.relative}\n
+					Last Listings: ${last_count}, Now: ${count}`
 				)
 				.addFields(
 					{ name: 'Xanax', value: `${data.personalstats.drugs.xanax}`, inline: true },
