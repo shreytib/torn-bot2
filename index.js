@@ -730,12 +730,15 @@ async function UserChecking(index, key_id) {
 						// already pinged
 					}
 					else{
-						let payload = {
-							message: 'Bazaar Sale',
-							userID: index,
-							money: players[index].soldValue,
-						};
-						broadcast(payload);
+						if(count !== 0){
+							let payload = {
+								message: 'Bazaar Sale',
+								userID: index,
+								money: players[index].soldValue,
+							};
+							broadcast(payload);
+						}
+						
 						client.channels.cache.get(bot.channel_sales).send({ content: bot.role_mug, embeds: [status] });
 						// client.channels.cache.get(bot.channel_logs).send({ content:`${JSON.stringify(data)}` });
 
