@@ -770,6 +770,12 @@ async function SEChecking(index, key_id) {
 				//console.log(`${items[index].name} no change in listing.`)
 				return;
 			}
+
+			let check = false;
+
+			if(minCost < items[index].lastCheapestValue) {
+				check = true;
+			}
 	
 			items[index].lastCheapestValue = minCost;
 			items[index].qty = qty;
@@ -778,7 +784,7 @@ async function SEChecking(index, key_id) {
 	
 			let color = "#0ca60c";
 	
-			if( (['106', '329', '330', '331', '336'].includes(index) && qty === 1) || (!['106', '329', '330', '331', '336'].includes(index) && qty <= 5) ){
+			if( (['106', '329', '330', '331', '336'].includes(index) && qty === 1 && check) || (!['106', '329', '330', '331', '336'].includes(index) && qty <= 5 && check) ){
 				diff = (items[index].minimum * 1.1) - minCost;
 	
 				if(diff > 0){
@@ -1937,8 +1943,11 @@ client.on('messageCreate', async message => {
 			return message.reply("Please provide at least two arguments.");
 		}
 		
-		const id = args[0];
-		const value = parseInt(args[1]);
+		const value = parseInt(args.pop(), 10); // Extract the last argument as an integer
+		const id = args.join(" "); // Join the remaining arguments as a string
+
+		//const id = args[0];
+		//const value = parseInt(args[1]);
 		
 		if (typeof value !== "number" || !value) {
 			return message.reply("Invalid item value.");
@@ -1970,17 +1979,15 @@ client.on('messageCreate', async message => {
 			return message.reply(`Purged prices list.`);
 		}
 
-		for (let i in args){
-			let id = args[i];
+		const id = args.join(" "); // Join the remaining arguments as a string
 
-			if(prices.hasOwnProperty(id)){
-				delete prices[i];
-				fs.writeFileSync('prices.json', JSON.stringify(prices));
-				message.reply(`Stopped tracking ${id}`);
-			}
-			else{
-				message.reply(`Not stalking item ${id} currently`);
-			}
+		if(prices.hasOwnProperty(id)){
+			delete prices[i];
+			fs.writeFileSync('prices.json', JSON.stringify(prices));
+			message.reply(`Stopped tracking ${id}`);
+		}
+		else{
+			message.reply(`Not stalking item ${id} currently`);
 		}
 		
 	}
