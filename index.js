@@ -1717,7 +1717,7 @@ client.on('messageCreate', async message => {
 		}
 
 		const entries = Object.entries(tmp_players);
-		const sortedEntries = entries.sort((a, b) => b[1].soldValue - a[1].soldValue);
+		const sortedEntries = entries.sort((a, b) => b[1].bazaarValue - a[1].bazaarValue);
     
 		for(const [key, value] of sortedEntries){
 			const { name, bazaarValue, bazaarCount, bazaarWorth } = value;
