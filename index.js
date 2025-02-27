@@ -1722,11 +1722,11 @@ client.on('messageCreate', async message => {
 		}
 
 		const entries = Object.entries(tmp_players);
-		const sortedEntries = entries.sort((a, b) => b[1].bazaarValue - a[1].bazaarValue);
+		const sortedEntries = entries.sort((a, b) => b[1].bazaarWorth - a[1].bazaarWorth);
     
 		for(const [key, value] of sortedEntries){
 			const { name, bazaarValue, bazaarCount, bazaarWorth } = value;
-			let info = (`${name} [${key}] Value: ${bazaarValue} Count: ${bazaarCount} Worth: ${bazaarWorth}\n`);
+			let info = (`${name} [${key}] Worth: ${bazaarWorth} Value: ${bazaarValue} Count: ${bazaarCount}\n`);
 			if ((currentChunk.length + info.length) >= 2000) {
 				// If it exceeds the limit, add the current chunk to the chunks array
 				chunks.push(currentChunk);
