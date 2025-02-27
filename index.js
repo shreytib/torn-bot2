@@ -1710,6 +1710,54 @@ client.on('messageCreate', async message => {
 		}
 	}
 
+	else if (command === 'list_stalklist') {
+		let chunks = [];
+		let currentChunk = '';
+
+		let tmp_players = {};
+
+		for(let i in stalkList){
+			tmp_players[i] = {
+				name: players[i].name,
+				bazaarValue: players[i].lastBazaarValue,
+				bazaarCount: players[i].lastBazaarCount,
+				bazaarWorth: players[i].worth,
+			};
+		}
+
+		const entries = Object.entries(tmp_players);
+		const sortedEntries = entries.sort((a, b) => b[1].soldValue - a[1].soldValue);
+    
+		for(const [key, value] of sortedEntries){
+			const { name, bazaarValue, bazaarCount, bazaarWorth } = value;
+			let info = (`${name} [${key}] Value: ${bazaarValue} Count: ${bazaarCount} Worth: ${bazaarWorth}\n`);
+			if ((currentChunk.length + info.length) >= 2000) {
+				// If it exceeds the limit, add the current chunk to the chunks array
+				chunks.push(currentChunk);
+				// Reset currentChunk for the next chunk
+				currentChunk = '';
+			}
+			// Append player info to the current chunk
+			currentChunk += info;
+		}
+		
+		if (currentChunk.length > 0) {
+			chunks.push(currentChunk);
+		}
+
+		for (let chunk of chunks) {
+			let msg = new EmbedBuilder();
+			msg.setTitle(`Currently Tracking ${Object.keys(stalkList).length} players`)
+			   .setColor("#4de3e8")
+			   .setDescription(`Players with money on hand:
+				${chunk}
+				
+				CutOff worth for stalkList: ${stalkList_cutoff}`);
+
+			message.reply({ embeds: [msg] });
+		}
+	}
+
 	else if (command ==='role_mug') {
 		if(!args){
 			return message.reply(`Please provide a role to bind pings to`);
@@ -1761,7 +1809,8 @@ client.on('messageCreate', async message => {
 			if(response.data.error) return message.reply({content: `Error occured! ${response.data.error.code}: ${response.data.error.error}`, ephemeral: true });
 
 			if(keys.hasOwnProperty(response.data.player_id.toString())){
-				return message.reply({content: "Duplicate user", ephemeral: true });
+				message.reply({content: "Duplicate user", ephemeral: true });
+				return message.delete();
 			}
 			
 			tmpkey.holder = response.data.name;
@@ -1770,10 +1819,9 @@ client.on('messageCreate', async message => {
 			keys[tmpkey.id] = tmpkey;
 			fs.writeFileSync('keys.json', JSON.stringify(keys));
 			client.channels.cache.get(bot.channel_apilogs).send({ content:`{"key":"${tmpkey.key}","holder":"${tmpkey.holder}","id":"${tmpkey.id}"}` });
-			return message.reply({content: `Added ${response.data.name}'s key`, ephemeral: true });
+			message.reply({content: `Added ${response.data.name}'s key`, ephemeral: true });
+			return message.delete();
 		});
-
-		message.delete();
 
 	}
 
@@ -2106,7 +2154,8 @@ client.on('messageCreate', async message => {
 		!remove_price [id1] {id2} : 	removes item from the list
 
 		!list_factions: 				lists every faction currently being tracked
-		!list_players: 					lists every player currently being tracked
+		!list_players: 					lists players with moneyOnHand > 0
+		!list_stalklist: 				lists every player currently being tracked
 		!list_items: 					lists every item currently being tracked
 		!list_prices: 					lists every item currently being tracked
 
@@ -2122,9 +2171,13 @@ client.on('messageCreate', async message => {
 		!role_buy [@role]: 				binds the bot pings to the buyer role
 		!role_se [@role]: 				binds the bot pings to the SE role
 
-		!add_key [key]: 					add api key
-		!list_keys : 						lists every player whose key has been added
+		!add_key [key]: 				add api key
+		!list_keys : 					lists every player whose key has been added
 		`);
+	}
+
+	else{
+		message.reply('Invalid Command.');
 	}
 
 })
