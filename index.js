@@ -589,13 +589,6 @@ async function UserChecking(index, key_id) {
 				else{
 					players[index].soldValue += players[index].lastBazaarValue - sum;
 				}
-				if(count === 0 && players[index].lastBazaarValue >= 1000000000){
-					players[index].soldValue = 0;
-					//client.channels.cache.get(bot.channel_error).send({ content: `Player ${players[index].name} [${index}]: Had ${players[index].lastBazaarCount} listings, now 0 at: ${new Date()}` });
-					players[index].lastBazaarValue = sum;
-					players[index].lastBazaarCount = count;
-					return;
-				}
 
 				let last_count = players[index].lastBazaarCount;
 				players[index].lastBazaarValue = sum;
@@ -730,14 +723,12 @@ async function UserChecking(index, key_id) {
 						// already pinged
 					}
 					else{
-						if(count !== 0){
-							let payload = {
-								message: 'Bazaar Sale',
-								userID: index,
-								money: players[index].soldValue,
-							};
-							broadcast(payload);
-						}
+						let payload = {
+							message: 'Bazaar Sale',
+							userID: index,
+							money: players[index].soldValue,
+						};
+						broadcast(payload);
 						
 						client.channels.cache.get(bot.channel_sales).send({ content: bot.role_mug, embeds: [status] });
 						// client.channels.cache.get(bot.channel_logs).send({ content:`${JSON.stringify(data)}` });
