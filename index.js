@@ -1,6 +1,6 @@
 const fs = require("fs");
 const axios = require('axios');
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 const https = require('https');
 const WebSocket = require('ws');
 
