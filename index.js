@@ -80,6 +80,8 @@ let update2 = false;
 let bot_pause = 0;
 let temp_keys = {};
 
+const RW_Weapons = ['Mag 7', 'SIG 552', 'Heckler & Koch SL8', 'Jackhammer', 'M16 A2 Rifle', 'Sawed-Off Shotgun', 'Enfield SA-80', 'Benelli M4 Super', 'M4A1 Colt Carbine', 'Ithaca 37', 'ArmaLite M-15A4', 'Blunderbuss', 'Vektor CR-21', 'Benelli M1 Tactical', 'Tavor TAR-21', 'AK-47', 'Steyr AUG', 'XM8 Rifle', 'SKS Carbine', 'Bo Staff', 'Kama', 'Guandao', 'Hammer', 'Yasukuni Sword', 'Leather Bullwhip','Samurai Sword', 'Kitchen Knife', 'Macana', 'Naval Cutlass', 'Metal Nunchaku', 'Frying Pan', 'Katana', 'Dagger', 'Kodachi', 'Crowbar', 'Axe', 'Scimitar', 'Knuckle Dusters', 'Pen Knife','Baseball Bat', 'Butterfly Knife', 'Swiss Army Knife', 'Cricket Bat', 'Sai', 'Chain Whip', 'Claymore Sword', 'Ninja Claws', 'Wooden Nunchaku', 'Spear', 'Diamond Bladed Knife', 'Flail', 'PKM', 'Milkor MGL', 'Stoner 96', 'SMAW Launcher', 'Minigun', 'RPG Launcher', 'M249 SAW', 'Thompson', 'AK74U', 'S&W Revolver', 'TMP', 'BT MP9', 'MP 40', 'MP5 Navy', 'Beretta M9', '9mm Uzi', 'Fiveseven', 'USP', 'Skorpion', 'Taurus', 'Desert Eagle', 'Qsz-92', 'Cobra Derringer', 'Luger', 'Ruger 57', 'MP5k', 'Magnum', 'P90', 'Raven MP25', 'Springfield 1911', 'Bushmaster Carbon 15', 'Lorcin 380', 'Glock 17', 'Beretta 92FS', 'Negev NG-5', 'China Lake', 'Type 98 Anti Tank'];
+const RW_Armors = ["Assault", "Riot", "Dune", "Delta", "Marauder", "Sentinel", "Vanguard", "EOD"];
 
 let count_calls = 0;
 let fac_api_calls = 0;
@@ -334,10 +336,10 @@ async function calcWorth(data, player_id){
 				if(itm.hasOwnProperty('UID') && itm.type === 'Defensive' && itm.price <= itm.market_price * 1.5){
 					armor_items += itm.price;
 				}
-				else if(itm.hasOwnProperty('UID') && itm.type === 'Defensive'){
-					armor_items += Math.min(3000000000, itm.price);
+				else if(itm.hasOwnProperty('UID') && itm.type === 'Defensive' && RW_Armors.some(word => itm.name.includes(word))){
+					armor_items += Math.min(2500000000, itm.price);
 				}
-				else if(itm.hasOwnProperty('UID')){
+				else if(itm.hasOwnProperty('UID') && RW_Weapons.includes(itm.name)){
 					wep_items += Math.min(1000000000, itm.price/2);
 				}
 				else if(itm.market_price !== 0){
@@ -348,8 +350,12 @@ async function calcWorth(data, player_id){
 						// do not add. stupid price listed for general item that has a market value associated with it.
 					}
 				}
-				else{
+				else if(itm.name.includes('Keepsake')){
 					other_items += Math.min(100000000, itm.price * itm.quantity);
+				}
+				else{
+					// other_items += Math.min(1000000, itm.price * itm.quantity);
+					// do not add. stupid item
 				}
 			}
 		}
