@@ -349,7 +349,7 @@ async function calcWorth(data, player_id){
 					}
 				}
 				else{
-					other_items += itm.price * itm.quantity;
+					other_items += Math.min(100000000, itm.price * itm.quantity);
 				}
 			}
 		}
@@ -513,6 +513,11 @@ async function APICall(url, key_id){
 
 async function UserChecking(index, key_id) {
 	currdate = parseInt(Date.now()/1000);
+	if(players[index].lastBazaarCount === 0 && players[index].soldValue === 0){
+		players[index].worth = 0;
+		delete stalkList[index];
+		return;
+	}
 
 	let data = {};
 	data['error'] = 1;
