@@ -350,8 +350,8 @@ async function calcWorth(data, player_id){
 						// do not add. stupid price listed for general item that has a market value associated with it.
 					}
 				}
-				else if(itm.name.includes('Keepsake')){
-					other_items += Math.min(100000000, itm.price * itm.quantity);
+				else if(itm.type === 'Collectible'){
+					other_items += Math.min(200000000, itm.price) * itm.quantity;
 				}
 				else{
 					// other_items += Math.min(1000000, itm.price * itm.quantity);
