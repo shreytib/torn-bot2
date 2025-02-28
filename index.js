@@ -942,7 +942,7 @@ async function updateStalkList(){
 	const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
 
 	// Get the top x players
-	const topX = sortedEntries.slice(0, 150);
+	const topX = sortedEntries.slice(0, 100);
 
 	stalkList_cutoff = topX.length > 0 ? topX[topX.length - 1][1] : 0;
 
@@ -951,6 +951,8 @@ async function updateStalkList(){
 
 	//console.log(`Updated Stalk List at ${new Date()}`);
 	//console.table(stalkList);
+	
+	minimumWaitTimeUser = (60 * Object.keys(stalkList).length/ 800) * 1000;
 
 	fs.writeFileSync('stalkList.json', JSON.stringify(stalkList));
 
