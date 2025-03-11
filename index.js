@@ -326,25 +326,59 @@ async function calcWorth(data, player_id){
 		let worth = 0;
 		let common_items = 0;
 		let wep_items = 0;
-		let armor_items = 0;
+		let RW_armor_items = 0;
 		let other_items = 0;
 		let count = 0;
+		let accepted_count = 0;
 	
 		if(data.bazaar.length != 0) {
 			for(itm of data.bazaar){
 				count++;
-				if(itm.hasOwnProperty('UID') && itm.type === 'Defensive' && itm.price <= itm.market_price * 1.5){
-					armor_items += itm.price;
+				if(itm.type === 'Defensive' && RW_Armors.some(word => itm.name.includes(word))){
+					if(itm.name.includes('EOD')){
+						RW_armor_items += Math.min(8000000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Sentinel')){
+						RW_armor_items += Math.min(3000000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Vanguard')){
+						RW_armor_items += Math.min(3000000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Marauder')){
+						RW_armor_items += Math.min(1000000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Delta')){
+						RW_armor_items += Math.min(800000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Assault')){
+						RW_armor_items += Math.min(200000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Riot')){
+						RW_armor_items += Math.min(100000000, itm.price);
+						accepted_count++;
+					}
+					else if(itm.name.includes('Dune')){
+						RW_armor_items += Math.min(100000000, itm.price);
+						accepted_count++;
+					}
 				}
-				else if(itm.hasOwnProperty('UID') && itm.type === 'Defensive' && RW_Armors.some(word => itm.name.includes(word))){
-					armor_items += Math.min(2500000000, itm.price);
+				else if(itm.type === 'Defensive'){
+					// skip general armor
 				}
 				else if(itm.hasOwnProperty('UID') && RW_Weapons.includes(itm.name)){
 					wep_items += Math.min(1000000000, itm.price/2);
+					accepted_count++;
 				}
 				else if(itm.market_price !== 0){
 					if(itm.price <= itm.market_price * 1.15){
 						common_items += itm.price * itm.quantity;
+						accepted_count++;
 					}
 					else{
 						// do not add. stupid price listed for general item that has a market value associated with it.
@@ -352,6 +386,7 @@ async function calcWorth(data, player_id){
 				}
 				else if(itm.type === 'Collectible'){
 					other_items += Math.min(200000000, itm.price) * itm.quantity;
+					accepted_count++;
 				}
 				else{
 					// other_items += Math.min(1000000, itm.price * itm.quantity);
@@ -361,11 +396,12 @@ async function calcWorth(data, player_id){
 		}
 
 		players[player_id].lastBazaarCount = count;
+		players[player_id].accepted_count = accepted_count;
 	
 		worth += (players[player_id]?.soldValue ?? 0) * 100; // if soldValue is undefined, add 0
 		worth += common_items * 20;
-		worth += armor_items * 8;
-		worth += wep_items * 3;
+		worth += RW_armor_items * 15;
+		worth += wep_items * 5;
 		worth += other_items * 1;
 	
 		if(data.personalstats.networth.total < 0){
@@ -1725,6 +1761,7 @@ client.on('messageCreate', async message => {
 				name: players[i].name,
 				bazaarValue: players[i].lastBazaarValue,
 				bazaarCount: players[i].lastBazaarCount,
+				bazaarAcceptedCount: players[i].accepted_count,
 				bazaarWorth: players[i].worth,
 			};
 		}
@@ -1734,7 +1771,7 @@ client.on('messageCreate', async message => {
     
 		for(const [key, value] of sortedEntries){
 			const { name, bazaarValue, bazaarCount, bazaarWorth } = value;
-			let info = (`${name} [${key}] Worth: ${bazaarWorth} Value: ${bazaarValue} Count: ${bazaarCount}\n`);
+			let info = (`${name} [${key}] Worth: ${shortenNumber(bazaarWorth)} Value: ${shortenNumber(bazaarValue)} Count: ${bazaarCount} Accepted Items: ${bazaarAcceptedCount}\n`);
 			if ((currentChunk.length + info.length) >= 2000) {
 				// If it exceeds the limit, add the current chunk to the chunks array
 				chunks.push(currentChunk);
