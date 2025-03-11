@@ -1095,14 +1095,34 @@ async function runSEChecking(count){
 }
 
 
+async function runFactionChecking(players2Update) {
+    let batchSize = 50;
+    let delay = 12 * 1000;
 
+    for (let i = 0; i < players2Update.length; i += batchSize) {
+        let batch = players2Update.slice(i, i + batchSize);
+
+        let startTime = Date.now(); // Record start time
+        await Promise.all(batch.map(player => updatePlayer(player))); // Wait for batch to complete
+        let elapsedTime = Date.now() - startTime; // Calculate execution time
+
+        console.log(`Checked ${i + batch.length}/ ${players2Update.length} players. Batch took ${elapsedTime}ms.`);
+
+		await updateStalkList();
+
+        // Calculate remaining time to wait
+        let remainingTime = delay - elapsedTime;
+        if (remainingTime > 0 && i + batchSize < players2Update.length) {
+            await new Promise(resolve => setTimeout(resolve, remainingTime));
+        }
+    }
+}
 
 
 
 
 
 const StartLoop = async () => {
-	const MAX_FAC_CALLS = 250;
 
 	const manageUpdateFaction = async () => {
 		try{
@@ -1110,39 +1130,42 @@ const StartLoop = async () => {
 				let fac_elapsedTime = 0.0;
 				let fac_start = performance.now();
 				console.log("\nStarting new loop factions at: ", new Date());
+				let promises = [];
+				let fac_count = 0;
+				let players2Update = [];
 				for (let fac in factions) {
-					if(count_calls >= 950){
-						await sleep(10 * 1000);
+					fac_count++;
+					promises.push(updateFaction(fac));
+				
+					if (fac_count >= 80) {
+						players2Update.push(...(await Promise.all(promises)).flat());
+						// Reset the batch
+						promises = [];
+						fac_count = 0;
+						console.log(`\nChecked ${fac_count}/${Object.keys(factions).length} factions at: `, new Date());
 					}
-					if(bot_pause >= 100){
-						console.log(`API disabled. Bot paused for 1 minute at:`, new Date());
-						await sleep(60 * 1000);
-						bot_pause = 0;
-					}
-					let players_to_update = [];
-					if (fac_api_calls >= MAX_FAC_CALLS) {
-					  	await sleep(10 * 1000);
-				  	}
-  
-				  	players_to_update = await updateFaction(fac);
-
-					let promises_p2updt = [];
-  
-				  	if(players_to_update){
-						for (let i in players_to_update){
-							promises_p2updt.push(updatePlayer(players_to_update[i]));
-						}
-						await Promise.all(promises_p2updt);
-				  	}
-  
-				  	await updateStalkList();
-  
+					await sleep(5 * 1000);
 				}
+
+				// If there are any remaining promises, process them
+				if (promises.length > 0) {
+					players2Update.push(...(await Promise.all(promises)).flat());
+				}
+
 				let fac_end = performance.now();
 				fac_elapsedTime = Math.round(fac_end - fac_start);
-			  	console.log(`\nChecked ${Object.keys(factions).length} factions at: `, new Date(), `in ${fac_elapsedTime} miliseconds.\n`);
 
-				await sleep(20 * 1000); // Add delay to prevent immediate loop iteration
+				console.log(`\nChecked ${Object.keys(factions).length} factions at: `, new Date(), `in ${fac_elapsedTime} miliseconds. Players to Update: ${players2Update.length}\n`);
+
+				fac_start = performance.now();
+
+				await runFactionChecking(players2Update);
+
+				fac_end = performance.now();
+				fac_elapsedTime = Math.round(fac_end - fac_start);
+			  	console.log(`\nUpdated ${players2Update.length} players at: `, new Date(), `in ${fac_elapsedTime} miliseconds.\n`);
+
+				await sleep(30 * 1000); // Add delay to prevent immediate loop iteration
 		  	}
 		}
 		catch(error){
@@ -1255,8 +1278,8 @@ const StartLoop = async () => {
 
 	const resetFacApiCallsCount = async () => {
 		while (true) {
-			await sleep(20 * 1000); // 20 seconds
-			console.log(`Last 20 seconds Fac-API calls count: ${fac_api_calls}; at: ${new Date()}`);
+			await sleep(30 * 1000); // 30 seconds
+			console.log(`Last 30 seconds Fac-API calls count: ${fac_api_calls}; at: ${new Date()}`);
 			fac_api_calls = 0;
 		}
 	};
