@@ -1107,17 +1107,17 @@ async function runFactionChecking(players2Update) {
 	let count2 = 0;
 
 	let keys_list = Object.keys(keys);
-	let key_pos = keys_list.length - 1;
+	let key_pos = 0;
 	let key_id = '';
 
 	for (let player_id of players2Update) {
 		count++;
 		count2++;
 
-		if (key_pos < 0) { key_pos = keys_list.length - 1; }
+		if (key_pos >= keys_list.length) { key_pos = 0; }
 		key_id = keys_list[key_pos].toString();
 		promises_player.push(updatePlayer(player_id, key_id));
-		--key_pos;
+		++key_pos;
 	
 		if (count >= 50) {
 			let startTime = Date.now(); // Record start time
@@ -1163,7 +1163,7 @@ const StartLoop = async () => {
 				let players2Update = [];
 
 				let keys_list = Object.keys(keys);
-				let key_pos = keys_list.length - 1;
+				let key_pos = 0;
 				let key_id = '';
 
 				for (let fac_id of Object.keys(factions)) {
@@ -1171,10 +1171,10 @@ const StartLoop = async () => {
 					fac_count2++;
 					console.log(fac_id);
 
-					if (key_pos < 0) { key_pos = keys_list.length - 1; }
+					if (key_pos >= keys_list.length) { key_pos = 0; }
 					key_id = keys_list[key_pos].toString();
 					promises_fac.push(updateFaction(fac_id, key_id));
-					--key_pos;
+					++key_pos;
 				
 					if (fac_count >= 50) {
 						let startTime = Date.now(); // Record start time
