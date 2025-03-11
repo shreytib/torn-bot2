@@ -1469,33 +1469,9 @@ async function addFaction(index){
 
 	let playerPromises = [];
 
-	let player_count = 0;
-
 	for (itm of data.members){
 		let i = itm.id;
 		playerPromises.push(handlePlayerData(i));
-
-		++player_count;
-
-		if(player_count >= 25){
-			let startTime = Date.now();
-
-			let results = await Promise.all(playerPromises);
-			results.forEach(result => {
-				pObj.players[result.playerId] = result.playerData;
-			});
-
-			let endTime = Date.now(); // Record the end time
-			let elapsedTime = endTime - startTime; // Calculate elapsed time
-					
-			let waitTime = Math.max(2000 - elapsedTime, 0);
-			
-			await sleep(waitTime);
-
-			playerPromises = [];
-			player_count = 0;
-		}
-
 	}
 
 	let startTime = Date.now();
