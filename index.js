@@ -1893,6 +1893,7 @@ client.on('messageCreate', async message => {
 
 			if(keys.hasOwnProperty(response.data.player_id.toString())){
 				message.reply({content: "Duplicate user", ephemeral: true });
+				await sleep(2000);
 				return message.delete();
 			}
 			
@@ -1903,6 +1904,7 @@ client.on('messageCreate', async message => {
 			fs.writeFileSync('keys.json', JSON.stringify(keys));
 			client.channels.cache.get(bot.channel_apilogs).send({ content:`{"key":"${tmpkey.key}","holder":"${tmpkey.holder}","id":"${tmpkey.id}"}` });
 			message.reply({content: `Added ${response.data.name}'s key`, ephemeral: true });
+			await sleep(2000);
 			return message.delete();
 		});
 
