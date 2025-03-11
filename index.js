@@ -915,6 +915,8 @@ async function updateFaction(index){
 				}
 			}
 
+			console.log(to_update);
+
 			return to_update;
 		} catch(error){
 			console.log(`Unexpected error: ${error}`);
@@ -1359,6 +1361,7 @@ const StartLoop = async () => {
 
 	// Start loops concurrently
 	manageUpdateFaction();
+	await sleep(2500);
 	manageCheckUser();
 	//manageCheckSE();
 	resetFacApiCallsCount();
