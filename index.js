@@ -1143,13 +1143,14 @@ const StartLoop = async () => {
 						promises = [];
 						fac_count = 0;
 						console.log(`\nChecked ${fac_count}/${Object.keys(factions).length} factions at: `, new Date());
+						await sleep(5 * 1000);
 					}
-					await sleep(5 * 1000);
 				}
 
 				// If there are any remaining promises, process them
 				if (promises.length > 0) {
 					players2Update.push(...(await Promise.all(promises)).flat());
+					await sleep(5 * 1000);
 				}
 
 				let fac_end = performance.now();
