@@ -1111,7 +1111,7 @@ async function runFactionChecking(players2Update) {
 		await updateStalkList();
 
         // Calculate remaining time to wait
-        let remainingTime = delay - elapsedTime;
+        let remainingTime = Math.min(0, delay - elapsedTime);
         if (remainingTime > 0 && i + batchSize < players2Update.length) {
             await new Promise(resolve => setTimeout(resolve, remainingTime));
         }
@@ -1137,13 +1137,16 @@ const StartLoop = async () => {
 					fac_count++;
 					promises.push(updateFaction(fac));
 				
-					if (fac_count >= 80) {
+					if (fac_count >= 50) {
+						let startTime = Date.now(); // Record start time
 						players2Update.push(...(await Promise.all(promises)).flat());
+						let elapsedTime = Date.now() - startTime;
+						let remainingTime = Math.min(0, 12000 - elapsedTime);
+						console.log(`\nChecked ${fac_count}/${Object.keys(factions).length} factions at: `, new Date());
 						// Reset the batch
 						promises = [];
 						fac_count = 0;
-						console.log(`\nChecked ${fac_count}/${Object.keys(factions).length} factions at: `, new Date());
-						await sleep(5 * 1000);
+						await sleep(remainingTime);
 					}
 				}
 
