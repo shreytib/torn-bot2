@@ -92,7 +92,7 @@ let lastMuggerCheck = new Date();
 
 let stalkList_cutoff = 0;
 
-let minimumWaitTimeUser = 11.25 * 1000; // Minimum wait time in milliseconds
+let minimumWaitTimeUser = 10 * 1000; // Minimum wait time in milliseconds
 let minimumWaitTimeSE = 4 * 1000; // Minimum wait time in milliseconds
 
 function shortenNumber(num) {
@@ -988,7 +988,7 @@ async function updateStalkList(){
 	//console.log(`Updated Stalk List at ${new Date()}`);
 	//console.table(stalkList);
 	
-	minimumWaitTimeUser = (60 * Object.keys(stalkList).length/ 800) * 1000;
+	minimumWaitTimeUser = (60 * Object.keys(stalkList).length/ 750) * 1000;
 
 	fs.writeFileSync('stalkList.json', JSON.stringify(stalkList));
 
@@ -1099,7 +1099,7 @@ async function runSEChecking(count){
 
 
 const StartLoop = async () => {
-	const MAX_FAC_CALLS = 50;
+	const MAX_FAC_CALLS = 250;
 
 	const manageUpdateFaction = async () => {
 		try{
@@ -1325,7 +1325,7 @@ const StartLoop = async () => {
 	// Start loops concurrently
 	manageUpdateFaction();
 	manageCheckUser();
-	manageCheckSE();
+	//manageCheckSE();
 	resetFacApiCallsCount();
 	outputApiCallsCount();
 	resetTempInvalidKeys();
