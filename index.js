@@ -1102,7 +1102,7 @@ async function runSEChecking(count){
 
 
 const StartLoop = async () => {
-	const MAX_FAC_CALLS = 250;
+	const MAX_FAC_CALLS = 1000;
 
 	const manageUpdateFaction = async () => {
 		try{
@@ -1326,8 +1326,8 @@ const StartLoop = async () => {
 	};
 
 	// Start loops concurrently
-	manageUpdateFaction();
-	manageCheckUser();
+	//manageUpdateFaction();
+	//manageCheckUser();
 	//manageCheckSE();
 	resetFacApiCallsCount();
 	outputApiCallsCount();
@@ -1488,7 +1488,7 @@ async function addFaction(index){
 			let endTime = Date.now(); // Record the end time
 			let elapsedTime = endTime - startTime; // Calculate elapsed time
 					
-			let waitTime = Math.max(5000 - elapsedTime, 0);
+			let waitTime = Math.max(2000 - elapsedTime, 0);
 			
 			await sleep(waitTime);
 
@@ -1508,7 +1508,7 @@ async function addFaction(index){
 	let endTime = Date.now(); // Record the end time
 	let elapsedTime = endTime - startTime; // Calculate elapsed time
 	
-	let waitTime = Math.max(7500 - elapsedTime, 0);
+	let waitTime = Math.max(2500 - elapsedTime, 0);
 
 	await sleep(waitTime);
 
