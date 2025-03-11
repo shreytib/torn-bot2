@@ -902,7 +902,7 @@ async function updateFaction(index, key_id){
 				let i = itm.id;
 				
 				if(players.hasOwnProperty(i)){
-					if(players[i].lastAction < itm.last_action.timestamp){
+					if(players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 1000000000){
 						to_update.push(i);
 					}
 				}
