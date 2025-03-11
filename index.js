@@ -1767,7 +1767,7 @@ client.on('messageCreate', async message => {
 		const sortedEntries = entries.sort((a, b) => b[1].bazaarWorth - a[1].bazaarWorth);
     
 		for(const [key, value] of sortedEntries){
-			const { name, bazaarValue, bazaarCount, bazaarWorth } = value;
+			const { name, bazaarValue, bazaarCount, bazaarAcceptedCount, bazaarWorth } = value;
 			let info = (`${name} [${key}] Worth: ${shortenNumber(bazaarWorth)} Value: ${shortenNumber(bazaarValue)} Count: ${bazaarCount} Accepted Items: ${bazaarAcceptedCount}\n`);
 			if ((currentChunk.length + info.length) >= 2000) {
 				// If it exceeds the limit, add the current chunk to the chunks array
