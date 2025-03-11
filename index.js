@@ -912,8 +912,6 @@ async function updateFaction(index){
 					let tmp_player = await handlePlayerData(i)
 					players[i] = tmp_player.playerData;
 					fs.writeFileSync('players.json', JSON.stringify(players));
-
-					to_update.push(i);
 				}
 			}
 
@@ -1141,7 +1139,10 @@ const StartLoop = async () => {
 				
 					if (fac_count >= 50) {
 						let startTime = Date.now(); // Record start time
-						players2Update.push(...(await Promise.all(promises)).flat());
+						let results = await Promise.all(promises);
+						let flattenedResults = results.flat();
+						players2Update.push(...flattenedResults);
+						console.log(players2Update);
 						let elapsedTime = Date.now() - startTime;
 						let remainingTime = Math.max(0, 12000 - elapsedTime);
 						console.log(`\nChecked ${fac_count2}/${Object.keys(factions).length} factions at: `, new Date());
