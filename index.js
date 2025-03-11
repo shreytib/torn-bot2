@@ -868,7 +868,7 @@ async function SEChecking(index, key_id) {
 	}
 }
 
-async function updateFaction(index){
+async function updateFaction(index, key_id){
 	currdate = parseInt(Date.now()/1000);
 
 	let data = {};
@@ -877,7 +877,7 @@ async function updateFaction(index){
 
 	let url = `https://api.torn.com/v2/faction/${index}?selections=basic,members&from=${currdate}&key=`;
 
-	data = await ApiCall(url);
+	data = await APICall(url, key_id);
 	fac_api_calls++;
 
 	if(data && data.error === 0){
@@ -915,20 +915,22 @@ async function updateFaction(index){
 				}
 			}
 
-			console.log(to_update);
+			//console.log(to_update);
 
 			return to_update;
 		} catch(error){
 			console.log(`Unexpected error: ${error}`);
-            return client.channels.cache.get(bot.channel_error).send({ content:`[Bazaar] Unexpected error in updateFaction: ${error.message}\n${error.stack}` });
+            client.channels.cache.get(bot.channel_error).send({ content:`[Bazaar] Unexpected error in updateFaction: ${error.message}\n${error.stack}` });
+			return [];
         }
 	}
 	else{
-		return;
+		console.log(`Error Data in updateFaction:\n${data}`);
+		return [];
 	}
 }
 
-async function updatePlayer(index){
+async function updatePlayer(index, key_id){
 	currdate = parseInt(Date.now()/1000);
 
 	let data = {};
@@ -937,7 +939,7 @@ async function updatePlayer(index){
 
 	let url = `https://api.torn.com/v2/user/${index}?selections=profile,bazaar,personalstats&cat=all&from=${currdate}&key=`;
 
-	data = await ApiCall(url);
+	data = await APICall(url, key_id);
 	fac_api_calls++;
 
 	if(data && data.error === 0){
@@ -1099,23 +1101,48 @@ async function runFactionChecking(players2Update) {
     let batchSize = 50;
     let delay = 12 * 1000;
 
-    for (let i = 0; i < players2Update.length; i += batchSize) {
-        let batch = players2Update.slice(i, i + batchSize);
 
-        let startTime = Date.now(); // Record start time
-        await Promise.all(batch.map(player => updatePlayer(player))); // Wait for batch to complete
-        let elapsedTime = Date.now() - startTime; // Calculate execution time
+	let promises_player = [];
+	let count = 0;
+	let count2 = 0;
 
-        console.log(`Checked ${i + batch.length}/ ${players2Update.length} players. Batch took ${elapsedTime}ms.`);
+	let keys_list = Object.keys(keys);
+	let key_pos = keys_list.length - 1;
+	let key_id = '';
 
+	for (let player_id of players2Update) {
+		count++;
+		count2++;
+
+		if (key_pos < 0) { key_pos = keys_list.length - 1; }
+		key_id = keys_list[key_pos].toString();
+		promises_player.push(updatePlayer(player_id, key_id));
+		--key_pos;
+	
+		if (count >= 50) {
+			let startTime = Date.now(); // Record start time
+			await Promise.all(promises_player);
+			await updateStalkList();
+			let elapsedTime = Date.now() - startTime;
+			let remainingTime = Math.max(0, 12000 - elapsedTime);
+			console.log(`\nChecked ${count2}/${players2Update.length} players at: `, new Date());
+			// Reset the batch
+			promises_player = [];
+			count = 0;
+			await sleep(remainingTime);
+		}
+	}
+
+	// If there are any remaining promises, process them
+	if (promises_player.length > 0) {
+		let startTime = Date.now(); // Record start time
+		await Promise.all(promises_player);
 		await updateStalkList();
-
-        // Calculate remaining time to wait
-        let remainingTime = Math.max(0, delay - elapsedTime);
-        if (remainingTime > 0 && i + batchSize < players2Update.length) {
-            await new Promise(resolve => setTimeout(resolve, remainingTime));
-        }
-    }
+		let elapsedTime = Date.now() - startTime;
+		let remainingTime = Math.max(0, 12000 - elapsedTime);
+		console.log(`\nChecked ${count2}/${players2Update.length} players at: `, new Date());
+		await sleep(remainingTime);
+	}
 }
 
 
@@ -1130,36 +1157,46 @@ const StartLoop = async () => {
 				let fac_elapsedTime = 0.0;
 				let fac_start = performance.now();
 				console.log("\nStarting new loop factions at: ", new Date());
-				let promises = [];
+				let promises_fac = [];
 				let fac_count = 0;
 				let fac_count2 = 0;
 				let players2Update = [];
-				for (let fac in factions) {
+
+				let keys_list = Object.keys(keys);
+				let key_pos = keys_list.length - 1;
+				let key_id = '';
+
+				for (let fac_id of Object.keys(factions)) {
 					fac_count++;
 					fac_count2++;
-					promises.push(updateFaction(fac));
+					console.log(fac_id);
+
+					if (key_pos < 0) { key_pos = keys_list.length - 1; }
+					key_id = keys_list[key_pos].toString();
+					promises_fac.push(updateFaction(fac_id, key_id));
+					--key_pos;
 				
 					if (fac_count >= 50) {
 						let startTime = Date.now(); // Record start time
-						let results = await Promise.all(promises);
-						console.log("RESULTS: \n", results);
-						let flattenedResults = results.flat();
-						console.log("FALTTENED: \n", flattenedResults);
+						let flattenedResults = (await Promise.all(promises_fac)).flat();
+						console.log("RESULT: \n", flattenedResults);
 						players2Update.push(...flattenedResults);
 						//console.log(players2Update);
 						let elapsedTime = Date.now() - startTime;
 						let remainingTime = Math.max(0, 12000 - elapsedTime);
 						console.log(`\nChecked ${fac_count2}/${Object.keys(factions).length} factions at: `, new Date());
 						// Reset the batch
-						promises = [];
+						promises_fac = [];
 						fac_count = 0;
 						await sleep(remainingTime);
 					}
 				}
 
 				// If there are any remaining promises, process them
-				if (promises.length > 0) {
-					players2Update.push(...(await Promise.all(promises)).flat());
+				if (promises_fac.length > 0) {
+					let results = await Promise.all(promises_fac);
+					let flattenedResults = results.flat();
+					players2Update.push(...flattenedResults);
 					await sleep(5 * 1000);
 				}
 
