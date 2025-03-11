@@ -397,9 +397,9 @@ async function calcWorth(data, player_id){
 			}
 		}
 
-		players[player_id].lastBazaarCount = count;
-		players[player_id].accepted_count = accepted_count;
-		players[player_id].lastBazaarValue = value;
+		players[player_id]?.lastBazaarCount = count;
+		players[player_id]?.accepted_count = accepted_count;
+		players[player_id]?.lastBazaarValue = value;
 	
 		worth += (players[player_id]?.soldValue ?? 0) * 100; // if soldValue is undefined, add 0
 		worth += common_items * 20;
@@ -411,7 +411,7 @@ async function calcWorth(data, player_id){
 			worth += data.personalstats.networth.total * 50;
 		}
 		
-		return worth;
+		return {worth, count, accepted_count, value};
 	}
 	catch (error){
 		console.log(`ERROR CALCWORTH: ${player_id}\n`, error);
@@ -948,7 +948,11 @@ async function updatePlayer(index){
         data = data.data;
 
 		try{
-			players[index].worth = await calcWorth(data, index);
+			const {worth, count, accepted_count, value} = await calcWorth(data, index);
+			players[index].worth = worth;
+			players[index].lastBazaarCount = count;
+			players[index].accepted_count = accepted_count;
+			players[index].lastBazaarValue = value;
 			return;
 		} catch(error){
 			console.log(`Unexpected error: ${error}`);
@@ -1440,9 +1444,11 @@ const handlePlayerData = async (i) => {
 	tmp_player.faction_id = data2.faction.faction_id;
 	tmp_player.faction_name = data2.faction.faction_name;
 	tmp_player.networth = data2.personalstats.networth.total;
-	tmp_player.lastBazaarCount = 0;
-	tmp_player.accepted_count = 0;
-	tmp_player.worth = await calcWorth(data2, i);
+	const {worth, count, accepted_count, value} = await calcWorth(data2, i);
+	tmp_player.worth = worth;
+	tmp_player.lastBazaarCount = count;
+	tmp_player.accepted_count = accepted_count;
+	tmp_player.lastBazaarValue = value;
 	tmp_player.state = data2.status.details;
 
 	return { playerId: i, playerData: tmp_player };
