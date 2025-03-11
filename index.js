@@ -1102,7 +1102,7 @@ async function runSEChecking(count){
 
 
 const StartLoop = async () => {
-	const MAX_FAC_CALLS = 1000;
+	const MAX_FAC_CALLS = 250;
 
 	const manageUpdateFaction = async () => {
 		try{
@@ -1326,8 +1326,8 @@ const StartLoop = async () => {
 	};
 
 	// Start loops concurrently
-	//manageUpdateFaction();
-	//manageCheckUser();
+	manageUpdateFaction();
+	manageCheckUser();
 	//manageCheckSE();
 	resetFacApiCallsCount();
 	outputApiCallsCount();
