@@ -396,10 +396,6 @@ async function calcWorth(data, player_id){
 				}
 			}
 		}
-
-		players[player_id]?.lastBazaarCount = count;
-		players[player_id]?.accepted_count = accepted_count;
-		players[player_id]?.lastBazaarValue = value;
 	
 		worth += (players[player_id]?.soldValue ?? 0) * 100; // if soldValue is undefined, add 0
 		worth += common_items * 20;
