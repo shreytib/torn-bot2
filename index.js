@@ -1132,9 +1132,11 @@ const StartLoop = async () => {
 				console.log("\nStarting new loop factions at: ", new Date());
 				let promises = [];
 				let fac_count = 0;
+				let fac_count2 = 0;
 				let players2Update = [];
 				for (let fac in factions) {
 					fac_count++;
+					fac_count2++;
 					promises.push(updateFaction(fac));
 				
 					if (fac_count >= 50) {
@@ -1142,7 +1144,7 @@ const StartLoop = async () => {
 						players2Update.push(...(await Promise.all(promises)).flat());
 						let elapsedTime = Date.now() - startTime;
 						let remainingTime = Math.max(0, 12000 - elapsedTime);
-						console.log(`\nChecked ${fac_count}/${Object.keys(factions).length} factions at: `, new Date());
+						console.log(`\nChecked ${fac_count2}/${Object.keys(factions).length} factions at: `, new Date());
 						// Reset the batch
 						promises = [];
 						fac_count = 0;
