@@ -330,10 +330,12 @@ async function calcWorth(data, player_id){
 		let other_items = 0;
 		let count = 0;
 		let accepted_count = 0;
+		let value = 0;
 	
 		if(data.bazaar.length != 0) {
 			for(itm of data.bazaar){
 				count++;
+				value += itm.price * itm.quantity;
 				if(itm.type === 'Defensive' && RW_Armors.some(word => itm.name.includes(word))){
 					if(itm.name.includes('EOD')){
 						RW_armor_items += Math.min(8000000000, itm.price);
@@ -397,6 +399,7 @@ async function calcWorth(data, player_id){
 
 		players[player_id].lastBazaarCount = count;
 		players[player_id].accepted_count = accepted_count;
+		players[player_id].lastBazaarValue = value;
 	
 		worth += (players[player_id]?.soldValue ?? 0) * 100; // if soldValue is undefined, add 0
 		worth += common_items * 20;
@@ -1437,18 +1440,10 @@ const handlePlayerData = async (i) => {
 	tmp_player.faction_id = data2.faction.faction_id;
 	tmp_player.faction_name = data2.faction.faction_name;
 	tmp_player.networth = data2.personalstats.networth.total;
+	tmp_player.lastBazaarCount = 0;
+	tmp_player.accepted_count = 0;
 	tmp_player.worth = await calcWorth(data2, i);
 	tmp_player.state = data2.status.details;
-
-	let sum = 0;
-	let count = 0;
-	for (const itm of data2.bazaar) {
-		let currItm = itm.price * itm.quantity;
-		sum += currItm;
-		count++;
-	}
-	tmp_player.lastBazaarValue = sum;
-	tmp_player.lastBazaarCount = count;
 
 	return { playerId: i, playerData: tmp_player };
 };
