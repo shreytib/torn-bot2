@@ -875,7 +875,7 @@ async function updateFaction(index, key_id){
 	data['error'] = 1;
 	data['data'] = {};
 
-	let url = `https://api.torn.com/v2/faction/${index}?selections=basic,members&from=${currdate}&key=`;
+	let url = `https://api.torn.com/v2/faction/${index}?selections=basic,members&from=${currdate}&key=${keys[key_id].key}`;
 
 	data = await APICall(url, key_id);
 	fac_api_calls++;
@@ -937,7 +937,7 @@ async function updatePlayer(index, key_id){
 	data['error'] = 1;
 	data['data'] = {};
 
-	let url = `https://api.torn.com/v2/user/${index}?selections=profile,bazaar,personalstats&cat=all&from=${currdate}&key=`;
+	let url = `https://api.torn.com/v2/user/${index}?selections=profile,bazaar,personalstats&cat=all&from=${currdate}&key=${keys[key_id].key}`;
 
 	data = await APICall(url, key_id);
 	fac_api_calls++;
