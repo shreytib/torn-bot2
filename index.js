@@ -1168,7 +1168,6 @@ const StartLoop = async () => {
 				for (let fac_id of Object.keys(factions)) {
 					fac_count++;
 					fac_count2++;
-					console.log(fac_id);
 
 					if (key_pos >= keys_list.length) { key_pos = 0; }
 					key_id = keys_list[key_pos].toString();
