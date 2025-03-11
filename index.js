@@ -884,7 +884,7 @@ async function updateFaction(index, key_id){
         data = data.data;
 
 		try{
-			console.log(`Checking faction ${factions[index].name} [${factions[index].tag}] [${index}]. Total members: ${Object.keys(factions[index].players).length} at ${new Date()}`);
+			//console.log(`Checking faction ${factions[index].name} [${factions[index].tag}] [${index}]. Total members: ${Object.keys(factions[index].players).length} at ${new Date()}`);
 
 			if(factions[index].name !== data.basic.name || factions[index].tag !== data.basic.tag || factions[index].players.length !== data.members.length){
 				factions[index].name = data.basic.name;
@@ -892,9 +892,7 @@ async function updateFaction(index, key_id){
 
 				factions[index].players = data.members.map(member => member.id);
 
-				console.log(`Change in faction ${data.name} [${data.tag}] [${index}]. Total members: ${data.members.length} at ${new Date()}`);
-
-				fs.writeFileSync('factions.json', JSON.stringify(factions));
+				console.log(`Change in faction ${data.basic.name} [${data.basic.tag}] [${index}]. Total members: ${data.members.length} at ${new Date()}`);
 			}
 
 			let to_update = [];
@@ -1129,6 +1127,7 @@ async function runFactionChecking(players2Update) {
 			// Reset the batch
 			promises_player = [];
 			count = 0;
+			fs.writeFileSync('players.json', JSON.stringify(players));
 			await sleep(remainingTime);
 		}
 	}
@@ -1179,15 +1178,14 @@ const StartLoop = async () => {
 					if (fac_count >= 50) {
 						let startTime = Date.now(); // Record start time
 						let flattenedResults = (await Promise.all(promises_fac)).flat();
-						console.log("RESULT: \n", flattenedResults);
 						players2Update.push(...flattenedResults);
-						//console.log(players2Update);
 						let elapsedTime = Date.now() - startTime;
 						let remainingTime = Math.max(0, 12000 - elapsedTime);
 						console.log(`\nChecked ${fac_count2}/${Object.keys(factions).length} factions at: `, new Date());
 						// Reset the batch
 						promises_fac = [];
 						fac_count = 0;
+						fs.writeFileSync('factions.json', JSON.stringify(factions));
 						await sleep(remainingTime);
 					}
 				}
