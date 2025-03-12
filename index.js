@@ -902,7 +902,7 @@ async function updateFaction(index, key_id){
 				let i = itm.id;
 				
 				if(players.hasOwnProperty(i)){
-					if(players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 2500000000){
+					if(itm.status.state !== 'Federal' && currdate - itm.last_action.timestamp < 24*60*60 && players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 2500000000){
 						if(!players_blacklist.hasOwnProperty(i)){
 							to_update.push(i);
 						}
