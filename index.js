@@ -511,7 +511,7 @@ async function APICall(url, key_id){
 				// Handle specific HTTP error codes if needed
                 if (error.response.status === 502 || error.response.status === 503 || error.response.status === 504) {
                     bot_pause += 1; // Adjust as per your logic
-                    return;
+                    return data;
                 }
                 // The request was made and the server responded with a status code
                 console.log('Error status:', error.response.status);
