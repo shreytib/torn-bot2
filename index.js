@@ -897,19 +897,16 @@ async function updateFaction(index, key_id){
 
 			let to_update = [];
 
-			if(data.members.length < 20){
-				delete factions[index];
-				client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] Removing faction ${data.basic.name} [${data.basic.tag}] [${index}] from track. Members: ${data.members.length}.` });
-				return to_update;
-			}
-
 			for (let itm of data.members){
 
 				let i = itm.id;
 				
 				if(players.hasOwnProperty(i)){
 					if(players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 2500000000){
-						to_update.push(i);
+						if(!players_blacklist.hasOwnProperty(i)){
+							to_update.push(i);
+						}
+						
 					}
 				}
 				else{
@@ -935,6 +932,9 @@ async function updateFaction(index, key_id){
 }
 
 async function updatePlayer(index, key_id){
+	if(players_blacklist.hasOwnProperty(index)){
+		return;
+	}
 	currdate = parseInt(Date.now()/1000);
 
 	let data = {};
@@ -970,7 +970,7 @@ async function updateStalkList(){
 	let tmp_list = {};
 
 	for (let i in players){
-		if(i in players_blacklist){
+		if(players_blacklist.hasOwnProperty(i)){
 			// do not add to stalkList
 		}
 		else{
@@ -1067,7 +1067,8 @@ async function runUserChecking(count){
 	fs.writeFileSync('players.json', JSON.stringify(players));
 
 	if(update){
-		fs.writeFileSync('players_blacklist.json', JSON.stringify([...stalking_blacklist]));
+		fs.writeFileSync('players_blacklist.json', JSON.stringify(players_blacklist));
+		fs.writeFileSync('stalking_blacklist.json', JSON.stringify([...stalking_blacklist]));
 	}
 	if(update2){
 		fs.writeFileSync('muggable_blacklist.json', JSON.stringify([...muggable_blacklist]));
