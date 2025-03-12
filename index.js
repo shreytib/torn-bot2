@@ -910,7 +910,12 @@ async function updateFaction(index, key_id){
 					}
 				}
 				else{
-					to_update.push(i);
+					if(itm.status.state !== 'Federal' && currdate - itm.last_action.timestamp < 24*60*60){
+						if(!players_blacklist.hasOwnProperty(i)){
+							to_update.push(i);
+						}
+						
+					}
 				}
 			}
 
