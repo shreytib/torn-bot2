@@ -924,7 +924,7 @@ async function updateFaction(index, key_id){
         }
 	}
 	else{
-		console.log(`Error Data in updateFaction:\n${data}`);
+		//console.log(`Error Data in updateFaction:\n${data}`);
 		return [];
 	}
 }
