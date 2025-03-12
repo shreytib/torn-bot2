@@ -934,8 +934,8 @@ async function updatePlayer(index, key_id){
 		return;
 	}
 	if(!players.hasOwnProperty(index)){
-		let tmp_player = await handlePlayerData(i)
-		players[i] = tmp_player.playerData;
+		let tmp_player = await handlePlayerData(index)
+		players[index] = tmp_player.playerData;
 		fs.writeFileSync('players.json', JSON.stringify(players));
 		return;
 	}
