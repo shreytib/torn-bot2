@@ -910,9 +910,7 @@ async function updateFaction(index, key_id){
 					}
 				}
 				else{
-					let tmp_player = await handlePlayerData(i)
-					players[i] = tmp_player.playerData;
-					fs.writeFileSync('players.json', JSON.stringify(players));
+					to_update.push(i);
 				}
 			}
 
@@ -933,6 +931,12 @@ async function updateFaction(index, key_id){
 
 async function updatePlayer(index, key_id){
 	if(players_blacklist.hasOwnProperty(index)){
+		return;
+	}
+	if(!players.hasOwnProperty(index)){
+		let tmp_player = await handlePlayerData(i)
+		players[i] = tmp_player.playerData;
+		fs.writeFileSync('players.json', JSON.stringify(players));
 		return;
 	}
 	currdate = parseInt(Date.now()/1000);
