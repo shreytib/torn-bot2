@@ -897,6 +897,12 @@ async function updateFaction(index, key_id){
 
 			let to_update = [];
 
+			if(data.members.length < 20){
+				delete factions[index];
+				client.channels.cache.get(bot.channel_logs).send({ content:`[Bazaar] Removing faction ${data.basic.name} [${data.basic.tag}] [${index}] from track. Members: ${data.members.length}.` });
+				return to_update;
+			}
+
 			for (let itm of data.members){
 
 				let i = itm.id;
