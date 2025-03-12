@@ -1,16 +1,15 @@
 const fs = require("fs");
 
 
+let stalkList = require('./stalkList.json');
 let players = require('./players.json');
-let factions = require('./factions.json');
 
-let factions_list = Object.keys(factions);
-
-for (let i in players){
-    if(!factions_list.includes(players[i].faction_id)){
-        delete players[i];
+for (let i in stalkList){
+    if(!players.hasOwnProperty(i)){
+        console.log('Deleting : ', i);
+        delete stalkList[i];
     }
 }
 
-fs.writeFileSync('players.json', JSON.stringify(players));
+fs.writeFileSync('stalkList.json', JSON.stringify(stalkList));
 console.log('Done');
