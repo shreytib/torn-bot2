@@ -1060,6 +1060,10 @@ async function runUserChecking(count){
 		key_id = keys_list[key_pos].toString();
 		promises.push(UserChecking(i, key_id));
 		++key_pos;
+		if(promises.length >= 50){
+			await Promise.all(promises);
+			promises = [];
+		}
 	}
 
 	await Promise.all(promises);
