@@ -1276,6 +1276,7 @@ const StartLoop = async () => {
 				} catch (error) {
 					console.error("An error occurred: ", error);
 					// Optionally, handle the error (e.g., retry the function or exit the loop)
+					await GetDat();
 				}
 			}
 			
