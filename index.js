@@ -67,6 +67,7 @@ let factions = require('./factions.json');
 let players = require('./players.json');
 let stalkList = require('./stalkList.json');
 let items = require('./items.json');
+let playerUpdateLog = require('./playerUpdateLog.json');
 
 let players_blacklist = require("./players_blacklist.json");
 
@@ -628,6 +629,8 @@ async function UserChecking(index, key_id) {
 				}
 
 				players[index].state = data.status.details;
+				players[index].name = data.name;
+				players[index].lastCheck = currdate;
 
 				if(data.job.company_type == 5){
 					players[index].soldValue += Math.round((players[index].lastBazaarValue - sum) * 0.25);
@@ -902,7 +905,7 @@ async function updateFaction(index, key_id){
 				let i = itm.id;
 				
 				if(players.hasOwnProperty(i)){
-					if(itm.status.state !== 'Federal' && currdate - itm.last_action.timestamp < 24*60*60 && players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 2500000000){
+					if(itm.status.state !== 'Federal' && currdate - itm.last_action.timestamp < 24*60*60 && players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 1000000000){
 						if(!players_blacklist.hasOwnProperty(i)){
 							to_update.push(i);
 						}
@@ -964,6 +967,15 @@ async function updatePlayer(index, key_id){
 			players[index].lastBazaarCount = count;
 			players[index].accepted_count = accepted_count;
 			players[index].lastBazaarValue = value;
+			players[index].name = data.name;
+			players[index].lastAction = data.last_action.timestamp;
+			players[index].faction_id = data.faction.faction_id;
+			players[index].faction_name = data.faction.faction_name;
+			players[index].networth = data.personalstats.networth.total;
+			players[index].state = data.status.details;
+			players[index].lastCheck = currdate;
+
+			playerUpdateLog.push([index, currdate]);
 			return;
 		} catch(error){
 			console.log(`Unexpected error: ${error}`);
@@ -1226,11 +1238,13 @@ const StartLoop = async () => {
 
 				await runFactionChecking(players2Update);
 
+				fs.writeFileSync('playerUpdateLog.json', JSON.stringify(playerUpdateLog));
+
 				fac_end = performance.now();
 				fac_elapsedTime = Math.round(fac_end - fac_start);
 			  	console.log(`\nUpdated ${players2Update.length} players at: `, new Date(), `in ${fac_elapsedTime} miliseconds.\n`);
 
-				await sleep(30 * 1000); // Add delay to prevent immediate loop iteration
+				await sleep(5 * 1000); // Add delay to prevent immediate loop iteration
 		  	}
 		}
 		catch(error){
@@ -1536,6 +1550,7 @@ const handlePlayerData = async (i) => {
 	tmp_player.accepted_count = accepted_count;
 	tmp_player.lastBazaarValue = value;
 	tmp_player.state = data2.status.details;
+	tmp_player.lastCheck = currdate;
 
 	return { playerId: i, playerData: tmp_player };
 };
