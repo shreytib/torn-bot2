@@ -883,6 +883,15 @@ async function updateFaction(index, key_id){
 	data = await APICall(url, key_id);
 	fac_api_calls++;
 
+	// retry
+	if(data.error === 1){
+		let data = {};
+		data['error'] = 1;
+		data['data'] = {};
+		data = await APICall(url, key_id);
+		fac_api_calls++;
+	}
+
 	if(data && data.error === 0){
         data = data.data;
 
@@ -905,7 +914,7 @@ async function updateFaction(index, key_id){
 				let i = itm.id;
 				
 				if(players.hasOwnProperty(i)){
-					if(itm.status.state !== 'Federal' && currdate - itm.last_action.timestamp < 24*60*60 && players[i].lastAction < itm.last_action.timestamp && players[i].networth >= 1000000000){
+					if(itm.status.state !== 'Federal' && currdate - itm.last_action.timestamp < 24*60*60 && players[i].lastAction !== itm.last_action.timestamp && players[i].networth >= 1000000000){
 						if(!players_blacklist.hasOwnProperty(i)){
 							to_update.push(i);
 						}
