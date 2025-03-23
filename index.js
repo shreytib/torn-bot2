@@ -67,7 +67,6 @@ let factions = require('./factions.json');
 let players = require('./players.json');
 let stalkList = require('./stalkList.json');
 let items = require('./items.json');
-let playerUpdateLog = require('./playerUpdateLog.json');
 
 let players_blacklist = require("./players_blacklist.json");
 
@@ -984,7 +983,6 @@ async function updatePlayer(index, key_id){
 			players[index].state = data.status.details;
 			players[index].lastCheck = currdate;
 
-			playerUpdateLog.push([index, currdate]);
 			return;
 		} catch(error){
 			console.log(`Unexpected error: ${error}`);
@@ -1246,8 +1244,6 @@ const StartLoop = async () => {
 				fac_start = performance.now();
 
 				await runFactionChecking(players2Update);
-
-				fs.writeFileSync('playerUpdateLog.json', JSON.stringify(playerUpdateLog));
 
 				fac_end = performance.now();
 				fac_elapsedTime = Math.round(fac_end - fac_start);
