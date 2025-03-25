@@ -4,9 +4,9 @@
     "330":{"id":330,"name":"Boxing Gloves","lastCheapestValue":464999995,"minimum":445000000,"qty":1},
     "331":{"id":331,"name":"Dumbbells","lastCheapestValue":464999989,"minimum":445000000,"qty":1},
     "336":{"id":336,"name":"Cesium-137","lastCheapestValue":664000000,"minimum":590000000,"qty":2},
-    "1118":{"id":1118,"name":"Armor Cache","lastCheapestValue":371000000,"minimum":330000000,"qty":6},
-    "1119":{"id":1119,"name":"Melee Cache","lastCheapestValue":207888888,"minimum":165000000,"qty":1},
+    "1118":{"id":1118,"name":"Armor Cache","lastCheapestValue":371000000,"minimum":320000000,"qty":6},
+    "1119":{"id":1119,"name":"Melee Cache","lastCheapestValue":207888888,"minimum":160000000,"qty":1},
     "1120":{"id":1120,"name":"Small Arms Cache","lastCheapestValue":149500000,"minimum":110000000,"qty":6},
-    "1121":{"id":1121,"name":"Medium Arms Cache","lastCheapestValue":261900000,"minimum":215000000,"qty":5},
-    "1122":{"id":1122,"name":"Heavy Arms Cache","lastCheapestValue":390699999,"minimum":340000000,"qty":2}
+    "1121":{"id":1121,"name":"Medium Arms Cache","lastCheapestValue":261900000,"minimum":195000000,"qty":5},
+    "1122":{"id":1122,"name":"Heavy Arms Cache","lastCheapestValue":390699999,"minimum":350000000,"qty":2}
 }
