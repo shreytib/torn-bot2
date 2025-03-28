@@ -1015,7 +1015,7 @@ async function updateStalkList(){
 	const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
 
 	// Get the top x players
-	const topX = sortedEntries.slice(0, 100);
+	const topX = sortedEntries.slice(0, 150); // stalklist size
 
 	stalkList_cutoff = topX.length > 0 ? topX[topX.length - 1][1] : 0;
 
@@ -1084,7 +1084,7 @@ async function runUserChecking(count){
 		key_id = keys_list[key_pos].toString();
 		promises.push(UserChecking(i, key_id));
 		++key_pos;
-		if(promises.length >= 50){
+		if(promises.length >= 75){
 			await Promise.all(promises);
 			promises = [];
 		}
@@ -1952,21 +1952,34 @@ client.on('messageCreate', async message => {
 	}
 
 	else if (command === 'list_keys') {
-		let msg = "";
-		for (let ky in keys){
-			msg+=`${keys[ky].holder} [${keys[ky].id}]\n`;
-		}
-		const status = new EmbedBuilder()
-		.setTitle(`${Object.keys(keys).length} Keys in database.`)
-		.setColor('#4de3e8')
-		.addFields(
-			{
-				name: 'Username [id]',
-				value: msg != '' ? msg : `No users`,
-				inline: true
+
+		let chunks = [];
+		let currentChunk = '';
+    
+		for(let ky in keys){
+			let info = `${keys[ky].holder} [${keys[ky].id}]\n`;
+			if ((currentChunk.length + info.length) >= 2000) {
+				// If it exceeds the limit, add the current chunk to the chunks array
+				chunks.push(currentChunk);
+				// Reset currentChunk for the next chunk
+				currentChunk = '';
 			}
-		);
-		return message.reply({ embeds: [status] });
+			// Append player info to the current chunk
+			currentChunk += info;
+		}
+		
+		if (currentChunk.length > 0) {
+			chunks.push(currentChunk);
+		}
+
+		for (let chunk of chunks) {
+			let msg = new EmbedBuilder();
+			msg.setTitle(`${Object.keys(keys).length} Keys in database.`)
+			   .setColor("#4de3e8")
+			   .setDescription(chunk);
+
+			message.reply({ embeds: [msg] });
+		}
 	}
 
 	else if (command === 'add_blacklist'){
